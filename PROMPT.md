@@ -30,12 +30,12 @@ Before you design anything, send subagents out and read what they bring back:
 ## The look
 
 - A Lord of the Rings homage. The famous scene: the company at the Doors of Durin at night, the inscription appearing in the moonlight, "Speak, friend, and enter", Gandalf trying every password he knows until the answer turns out to be the simplest one.
-- Our twist: the inscription reads **"Prompt it yourself, and enter."** That scene is the hero of the page: me as Gandalf at the door, the inscription glowing into view. One scene, done well. A little animation on it is welcome (the glow, the reveal, a replay), but do not stretch it into a film.
-- The photo at `../assets/mate.webp` is me. I am Gandalf. Use it.
-- You can generate images. Cloudflare Workers AI is enabled on this account: the token is `CLOUDFLARE_WORKERS_AI_TOKEN`, the account id is `CLOUDFLARE_ACCOUNT_ID`. Use `@cf/black-forest-labs/flux-2-klein-9b`: it renders real text and takes reference images. Call it with multipart form data: `prompt`, `input_image_0` (my photo, 512x512), `width`, `height`. Refer to the photo as "the man in image 0". Check the spelling in what comes back; regenerate or overlay real text if a letter is off. The safety filter sometimes rejects a harmless prompt with "output has been flagged"; rephrase and try again. Generated images are build-time assets; nothing calls Workers AI at runtime. Pricing: https://developers.cloudflare.com/workers-ai/platform/pricing/
-- Image budget: 90,000 neurons, which is 1 US dollar, about 60 images from that model. Log every call to `ai-usage.log` in this folder (model, size, purpose) and stop when you reach the budget.
+- Our twist: the inscription reads **"Prompt it yourself, and enter."** That scene is the hero of the page: Gandalf at the door, the inscription glowing into view. One scene, done well. A little animation on it is welcome (the glow, the reveal, a replay), but do not stretch it into a film.
+- The photo at `../assets/mate.webp` is me. Gandalf in the scene should be generated from it, and my actual photo must also appear on the page as it is: I am the person behind the course.
+- Generate the scene with Nano Banana Pro: model `gemini-3-pro-image` on the Gemini API, key in `GEMINI_API_KEY`. Send my photo as an inline image part and refer to it as "the man in the reference photo"; ask for `responseModalities: ["IMAGE"]` and a 16:9 `aspectRatio`. It renders text well, but check the spelling of the inscription in what comes back and regenerate if a letter is off. Generated images are build-time assets; nothing calls the Gemini API at runtime.
+- Image budget: 7 images, which is about 1 US dollar. Log every call to `ai-usage.log` in this folder (model, purpose, kept or discarded) and stop at 7.
 - Background animation and a few more references in the same spirit are welcome. Invent your own lines; do not quote the books or the films, and do not use any film image, font, music or sound.
-- Draw or generate everything yourself. No third-party images, no libraries beyond what the starter ships.
+- Draw or generate everything else yourself. No third-party images, no libraries beyond what the starter ships.
 - Add a short fan-homage disclaimer in the footer: not affiliated with or endorsed by the Tolkien Estate, Middle-earth Enterprises, or the film studios.
 - One landing page, English only, mobile-first, fast, good SEO: people will find this by searching. No contact form. Remove whatever the starter has that this page does not use, and keep the audit clean.
 

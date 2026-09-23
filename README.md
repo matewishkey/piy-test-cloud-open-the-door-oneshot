@@ -23,7 +23,6 @@ Every run follows the same steps.
    ```sh
    bin/run sonnet      # or opus55, or fable51
    bin/run sonnet --check   # prints what it would do, starts nothing
-   bin/usage                # Workers AI neurons spent today, per model
    ```
 
 2. Do not type anything else. If the model asks a question anyway, reply exactly `Decide yourself.` once, and record that it asked in the results below.
@@ -33,7 +32,7 @@ What every run has in common:
 
 - The [mwk-rider](https://github.com/matewishkey/mwk-rider) plugin is installed. It provides a compliant Astro starter and an audit.
 - Cloudflare credentials for the `promptityourself.com` zone are in the environment, so the model can deploy to Workers and attach the custom domain itself.
-- A Cloudflare Workers AI token, so the model can generate images. The prompt names `@cf/black-forest-labs/flux-2-klein-9b`, which renders real text and takes a reference photo, and sets a budget of 90,000 neurons, which is 1 US dollar at Cloudflare's list price and about 60 images from that model. Each run logs its own calls; `bin/usage` reads the account's Workers AI usage per model per day from Cloudflare analytics, which is the independent check.
+- A Gemini API key, so the model can generate the scene with Nano Banana Pro (`gemini-3-pro-image`), which renders text reliably and takes a reference photo. The prompt caps it at 7 images, about 1 US dollar at list price, and asks each run to log every call. The check is the run's own log plus the image files it shipped.
 - The same operator instructions in `~/.claude/CLAUDE.md`. This repo has no `CLAUDE.md` of its own, on purpose.
 - The same machine, the same day, the same photo in [`assets/`](assets/).
 
@@ -60,7 +59,7 @@ Filled in after the runs.
 | Finished in one shot | | | |
 | Asked a question | | | |
 | Subagents spawned | | | |
-| Images generated / neurons spent | | | |
+| Images generated (cap 7) | | | |
 | Deployed itself | | | |
 | Audit `--strict` (required findings) | | | |
 | PageSpeed mobile / desktop | | | |
