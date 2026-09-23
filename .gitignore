@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+.wrangler/
+.rider-brief/
+.env
+.env.*
+.DS_Store
