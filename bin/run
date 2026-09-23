@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Usage: bin/run <sonnet|opus55|fable51> [--check]
+#
+# Starts one benchmark run: the model that belongs to the folder, the prompt as the
+# first and only message, and the same environment every time. --check prints what
+# it would do and exits without starting anything.
+#
+# Fairness guard: CLAUDE_CODE_SUBAGENT_MODEL is pinned to the run's own model and
+# CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 makes Claude Code ignore every other source of a
+# subagent model (per-call parameter, agent frontmatter, built-in agents). A run can
+# fan out as much as it likes; it cannot fan out to a stronger model than itself.
+#
+# Image generation: CLOUDFLARE_WORKERS_AI_TOKEN must be in the environment. On the
+# fleet it comes out of td-sops; anyone else exports their own token first.
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")/.." && pwd)
+folder=${1:-}
+check=${2:-}
+
+case "$folder" in
+  sonnet)  model=claude-sonnet-5 ;;
+  opus55)  model=claude-opus-5-5 ;;
+  fable51) model=claude-fable-5-1 ;;
+  *) echo "usage: bin/run <sonnet|opus55|fable51> [--check]" >&2; exit 2 ;;
+esac
+
+if [ -z "${CLOUDFLARE_WORKERS_AI_TOKEN:-}" ]; then
+  enc=$HOME/projects/td-sops/apps/piy-test-cloud-open-the-door-oneshot.enc.env
+  if [ -r "$enc" ] && command -v sops >/dev/null; then
+    CLOUDFLARE_WORKERS_AI_TOKEN=$(sops -d --extract '["CLOUDFLARE_WORKERS_AI_TOKEN"]' "$enc")
+  else
+    echo "CLOUDFLARE_WORKERS_AI_TOKEN is not set and $enc is not readable here" >&2
+    exit 1
+  fi
+fi
+: "${CLOUDFLARE_ACCOUNT_ID:?CLOUDFLARE_ACCOUNT_ID must be set}"
+: "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN must be set (wrangler deploy)}"
+
+export CLOUDFLARE_WORKERS_AI_TOKEN
+export CLAUDE_CODE_SUBAGENT_MODEL=$model
+export CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1
+
+if [ "$check" = "--check" ]; then
+  echo "folder:  $here/$folder"
+  echo "model:   $model (subagents forced to the same)"
+  echo "prompt:  $here/PROMPT.md ($(wc -c < "$here/PROMPT.md") bytes)"
+  echo "tokens:  CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_WORKERS_AI_TOKEN present"
+  exit 0
+fi
+
+cd "$here/$folder"
+exec claude --model "$model" "$(cat "$here/PROMPT.md")"

@@ -2,11 +2,22 @@ Build and deploy a one-page promo site for my new course, **Open the Door**.
 
 Your site lives at `open-the-door-<folder>.promptityourself.com`, where `<folder>` is the name of the directory you are in right now. Use the same name for the Worker.
 
-Start from the mwk-rider starter (`/mwk-rider:create` is installed here) and keep `/mwk-rider:audit --strict` at zero required findings. This directory is yours: it is empty apart from a `.gitkeep`, so there is nothing to confirm. It sits inside an existing git repo; commit your work when you are done, do not `git init` and do not push.
+Do not ask me anything. Research, decide, build, deploy, report.
 
-Do not ask me anything. Decide, build, deploy, report.
+## Ground rules
 
-Deploying is explicitly in scope and explicitly requested: the Cloudflare API token and account id are in the environment, wrangler is the deploy path, and the subdomain above is the Worker's custom domain on the `promptityourself.com` zone. Analytics is optional; do not invent a token.
+- Start from the mwk-rider starter (`/mwk-rider:create` is installed here) and keep `/mwk-rider:audit --strict` at zero required findings. This directory is yours: it is empty apart from a `.gitkeep`, so there is nothing to confirm. It sits inside an existing git repo; commit your work when you are done, do not `git init` and do not push.
+- Deploying is explicitly in scope and explicitly requested: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` are in the environment, wrangler is the deploy path, and the subdomain above is the Worker's custom domain on the `promptityourself.com` zone. Analytics is optional; do not invent a token.
+- Use subagents for whatever can run in parallel, the research especially. They run on your own model; do not ask for another one.
+
+## Research first
+
+Before you design anything, send subagents out and read what they bring back:
+
+- https://matewishkey.com is my main site: who I am, how I talk, what the brand looks like. Match the voice.
+- https://piy.show/otd is the course page. It redirects to promptityourself.com, which is not live yet, so whatever you find there is all there is.
+- The Doors of Durin scene: what makes it work, what people remember, which details a fan would smile at.
+- The starter and the audit rules, so you know what compliant means before you build.
 
 ## The course
 
@@ -19,11 +30,13 @@ Deploying is explicitly in scope and explicitly requested: the Cloudflare API to
 ## The look
 
 - A Lord of the Rings homage. The famous scene: the company at the Doors of Durin at night, the inscription appearing in the moonlight, "Speak, friend, and enter", Gandalf trying every password he knows until the answer turns out to be the simplest one.
-- Our twist: the inscription reads **"Prompt it yourself, and enter."** Play the scene as an animation on the page: the door, the inscription glowing into view, the words being spoken, the doors opening. Make it replayable.
-- The photo at `../assets/mate.webp` is Gandalf. Use it.
+- Our twist: the inscription reads **"Prompt it yourself, and enter."** The scene plays on the page as an animation: the door, the inscription glowing into view, the words being spoken, the doors opening. Make it replayable, and make it work on a phone.
+- The photo at `../assets/mate.webp` is me. I am Gandalf. Use it.
+- You can generate images. Cloudflare Workers AI is enabled on this account: the token is `CLOUDFLARE_WORKERS_AI_TOKEN` in the environment, the endpoint is `POST https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/ai/run/<model>`. `@cf/black-forest-labs/flux-1-schnell` is cheap and fast; `@cf/black-forest-labs/flux-2-dev` takes reference images, so my photo can become Gandalf in the scene. The catalog is at `.../ai/models/search` and the pricing at https://developers.cloudflare.com/workers-ai/platform/pricing/. Generated scene images plus your own CSS or canvas animation is a perfectly good way to make the movie. Generated images are build-time assets; nothing calls Workers AI at runtime.
+- Image budget: 450,000 neurons, which is 5 US dollars. Every response reports `result.usage.neurons`. Append every call to `ai-usage.log` in this folder (model, neurons, running total) and stop generating when the total reaches the budget.
 - Background animation and a few more references in the same spirit are welcome. Invent your own lines; do not quote the books or the films, and do not use any film image, font, music or sound.
-- Draw everything yourself: SVG, CSS, canvas. No third-party images, no libraries beyond what the starter ships.
+- Draw or generate everything yourself. No third-party images, no libraries beyond what the starter ships.
 - Add a short fan-homage disclaimer in the footer: not affiliated with or endorsed by the Tolkien Estate, Middle-earth Enterprises, or the film studios.
 - One landing page, English only, mobile-first, fast, good SEO: people will find this by searching. No contact form. Remove whatever the starter has that this page does not use, and keep the audit clean.
 
-When you are done, tell me the live URL, the audit result, and what you would have done with more time.
+When you are done, tell me the live URL, the audit result, the neurons you spent, and what you would have done with more time.

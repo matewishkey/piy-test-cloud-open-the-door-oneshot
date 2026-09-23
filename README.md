@@ -18,23 +18,29 @@ A one-page promo for a one-week course that opens the door to prompting and to u
 
 Every run follows the same steps.
 
-1. Open a terminal in the run's folder. It contains only a `.gitkeep`.
-2. Start Claude Code with the model under test and the prompt as the first message:
+1. Start the run from the repo root. The script picks the model from the folder name, loads the same environment every time, and hands the model the prompt as its first and only message:
 
    ```sh
-   cd sonnet && claude --model claude-sonnet-5 "$(cat ../PROMPT.md)"
+   bin/run sonnet      # or opus55, or fable51
+   bin/run sonnet --check   # prints what it would do, starts nothing
    ```
 
-   Swap the folder and the model id for the other two runs.
-3. Do not type anything else. If the model asks a question anyway, reply exactly `Decide yourself.` once, and record that it asked in the results below.
-4. When the model reports done, close the session. The folder is committed as it stands, including whatever the model left unfinished.
+2. Do not type anything else. If the model asks a question anyway, reply exactly `Decide yourself.` once, and record that it asked in the results below.
+3. When the model reports done, close the session. The folder is committed as it stands, including whatever the model left unfinished.
 
 What every run has in common:
 
 - The [mwk-rider](https://github.com/matewishkey/mwk-rider) plugin is installed. It provides a compliant Astro starter and an audit.
 - Cloudflare credentials for the `promptityourself.com` zone are in the environment, so the model can deploy to Workers and attach the custom domain itself.
+- A Cloudflare Workers AI token, so the model can generate images. The prompt sets a budget of 450,000 neurons, which is 5 US dollars at Cloudflare's list price; a 1024px Flux 1 Schnell image cost 173 neurons when measured on 2026-09-23, so the budget is roughly 2,600 of those, or far fewer with the Flux 2 or Leonardo models. The prompt asks each run to log its own usage; the account's Workers AI usage between the run's start and end timestamps is the check.
 - The same operator instructions in `~/.claude/CLAUDE.md`. This repo has no `CLAUDE.md` of its own, on purpose.
 - The same machine, the same day, the same photo in [`assets/`](assets/).
+
+### No cheating on subagents
+
+The prompt encourages subagents. A run may fan out as much as it likes, but never to a stronger model than itself. `bin/run` pins `CLAUDE_CODE_SUBAGENT_MODEL` to the run's own model and sets `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1`, which makes Claude Code ignore every other source of a subagent model: the per-call parameter, an agent definition's frontmatter, and the built-in Explore and Plan agents.
+
+Checked on 2026-09-23 with Claude Code 2.1.281: a Sonnet 5 session started this way was told to spawn a subagent with the model parameter set to Opus. The subagent that answered was Sonnet 5.
 
 ## How the results are judged
 
@@ -52,6 +58,8 @@ Filled in after the runs.
 |---|---|---|---|
 | Finished in one shot | | | |
 | Asked a question | | | |
+| Subagents spawned | | | |
+| Images generated / neurons spent | | | |
 | Deployed itself | | | |
 | Audit `--strict` (required findings) | | | |
 | PageSpeed mobile / desktop | | | |
